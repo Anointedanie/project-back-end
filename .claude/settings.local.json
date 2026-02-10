@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(aws sts get-caller-identity:*)",
+      "Bash(source:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

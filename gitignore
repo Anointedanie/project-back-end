@@ -1,0 +1,214 @@
+# ============================================================================
+# PYTHON .gitignore for Django E-Commerce Backend
+# ============================================================================
+# This file tells Git which files/folders to ignore (not track)
+# Important: Keeps secrets safe, reduces repo size, avoids conflicts
+# ============================================================================
+
+# ============================================================================
+# PYTHON COMPILED FILES
+# ============================================================================
+# Python creates these when running code - don't track them!
+*.py[cod]        # .pyc, .pyo, .pyd files
+*$py.class       # Python class files
+__pycache__/     # Python cache directory
+*.so             # Compiled extension modules
+
+# ============================================================================
+# PYTHON DISTRIBUTION / PACKAGING
+# ============================================================================
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================================================================
+# VIRTUAL ENVIRONMENTS
+# ============================================================================
+# Don't track virtual environment - each developer creates their own
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================================
+# DJANGO SPECIFIC
+# ============================================================================
+
+# Database files (SQLite)
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+db.sqlite3-journal
+
+# Django migrations (OPTIONAL - usually you DO track these)
+# Uncomment if you want to ignore migrations:
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Django static files (collected)
+/staticfiles/
+/static_root/
+
+# Django media files (uploaded by users)
+/media/
+/media_root/
+
+# Django logs
+*.log
+local_settings.py
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+# CRITICAL: Never commit .env - contains secrets!
+.env
+.env.local
+.env.*.local
+
+# ============================================================================
+# IDE / EDITOR FILES
+# ============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# OPERATING SYSTEM FILES
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# ============================================================================
+# TESTING
+# ============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+docs/_build/
+site/
+
+# ============================================================================
+# JUPYTER NOTEBOOK
+# ============================================================================
+.ipynb_checkpoints
+
+# ============================================================================
+# CELERY (if you add it later)
+# ============================================================================
+celerybeat-schedule
+celerybeat.pid
+
+# ============================================================================
+# NODE.JS (if you add frontend in same repo)
+# ============================================================================
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# ============================================================================
+# AWS / DEPLOYMENT
+# ============================================================================
+# AWS credentials
+.aws/
+
+# Elastic Beanstalk
+.elasticbeanstalk/
+
+# Docker
+docker-compose.override.yml
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+*.tmp
+*.bak
+*.swp
+.sass-cache/
+
+# ============================================================================
+# WHAT SHOULD BE TRACKED (not ignored)
+# ============================================================================
+# These files SHOULD be in git:
+# - .env.example (template for .env)
+# - requirements.txt (dependencies)
+# - manage.py (Django management)
+# - All .py files (your code)
+# - */migrations/*.py (usually)
+# - README.md, documentation
+# - .gitignore (this file!)
+# ============================================================================
+
+# ============================================================================
+# WHY THIS MATTERS
+# ============================================================================
+# Ignoring files prevents:
+# 1. Secrets in git (passwords, API keys)
+# 2. Merge conflicts (compiled files, databases)
+# 3. Large repo size (node_modules, media files)
+# 4. Platform-specific issues (.DS_Store, Thumbs.db)
+# ============================================================================

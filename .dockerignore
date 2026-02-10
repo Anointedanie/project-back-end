@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+*.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files (will be provided by Kubernetes secrets)
+.env
+.env.backup
+.env.example
+env.example
+
+# Git
+.git/
+.gitignore
+gitignore
+
+# Documentation
+*.md
+ARCHITECTURE.md
+LEARNING_GUIDE.md
+MENTOR_GUIDE.md
+MISSING_FILES_FIX.md
+QUICKSTART.md
+README.md
+
+# Test files
+test_*.py
+test_*.sh
+*.test
+*.spec
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Database
+*.sqlite3
+db.sqlite3
+postgres
+
+# Static and media (will be collected during deployment)
+staticfiles/
+media/
+
+# Logs
+*.log
+
+# IAM policies and setup scripts
+iam_policy_for_secrets_manager.json
+setup.sh
+
+# OS
+.DS_Store
+Thumbs.db
