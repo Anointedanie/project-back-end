@@ -1,0 +1,106 @@
+name: CI/CD Pipeline to AWS
+on:
+  push:
+    branches:
+      - main
+     
+  pull_request:
+    branches:
+      - main
+      
+    paths-ignore:
+      - 'README.md'
+    
+env:
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  IMAGE_TAG: dev-${{ github.run_number }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+
+jobs:
+  aws_login_build_push:
+    name: Checkout to github build and push to ecr
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        if: github.event_name != 'pull_request'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        if: github.event_name != 'pull_request'
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+          docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+          echo "image=$REGISTRY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # - name: Install kubectl
+      #   uses: azure/setup-kubectl@v3
+      #   with:
+      #     version: 'v1.28.0'
+  
+      # - name: Update kube config
+      #   run: |
+      #     aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
+  
+      # - name: Deploy to EKS
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     # Update deployment with new image
+      #     kubectl set image deployment/backend-auth \
+      #       backend-auth=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+      #       --namespace=default
+  
+      #     # Wait for rollout to complete
+      #     kubectl rollout status deployment/backend-auth --namespace=default --timeout=5m
+  
+      #     # Verify deployment
+      #     kubectl get pods --namespace=default -l app=backend-auth
+  
+      # - name: Verify deployment
+      #   run: |
+      #     kubectl get services backend-auth-service --namespace=default
+      #     kubectl get ingress backend-auth-ingress --namespace=default
+  
+      # - name: Run database migrations (Optional)
+      #   run: |
+      #     # Get first pod name
+      #     POD_NAME=$(kubectl get pods --namespace=default -l app=backend-auth -o jsonpath="{.items[0].metadata.name}")
+  
+      #     # Run migrations
+      #     kubectl exec $POD_NAME --namespace=default -- python manage.py migrate --noinput
+  
+      #     # Collect static files
+      #     kubectl exec $POD_NAME --namespace=default -- python manage.py collectstatic --noinput
+  
+      # - name: Notify deployment status
+      #   if: always()
+      #   run: |
+      #     if [ "${{ job.status }}" == "success" ]; then
+      #       echo "✅ Deployment successful!"
+      #     else
+      #       echo "❌ Deployment failed!"
+      #     fi
+  
+       
