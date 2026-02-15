@@ -22,7 +22,7 @@ Add the following secrets:
 ```bash
 # These should be from the IAM user created for GitHub Actions
 # See CI-CD_SETUP.md for creating the IAM user
-aws iam create-access-key --user-name github-actions-backend
+aws iam create-access-key --user-name github-actions-backend.
 ```
 
 ### 2. AWS Region
