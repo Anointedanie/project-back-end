@@ -35,6 +35,9 @@ db.sqlite3-journal
 # Environment variables
 .env
 
+# Kubernetes secrets (managed by GitHub Actions)
+deployment/secret.yaml
+
 # IDE
 .vscode/
 .idea/

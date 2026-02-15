@@ -4,9 +4,9 @@ on:
     branches:
       - main
      
-  pull_request:
-    branches:
-      - main
+  # pull_request:
+  #   branches:
+  #     - main
       
     paths-ignore:
       - 'README.md'
@@ -16,13 +16,18 @@ env:
   IMAGE_TAG: dev-${{ github.run_number }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
   EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  DEPLOYMENT_NAME: ecommerce-backend
+  NAMESPACE: ecommerce-backend-ns
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
 
 jobs:
   aws_login_build_push:
     name: Checkout to github build and push to ecr
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - name: Checkout code
@@ -53,54 +58,63 @@ jobs:
 
           echo "image=$REGISTRY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # - name: Install kubectl
-      #   uses: azure/setup-kubectl@v3
-      #   with:
-      #     version: 'v1.28.0'
-  
-      # - name: Update kube config
-      #   run: |
-      #     aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
-  
-      # - name: Deploy to EKS
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     IMAGE_TAG: ${{ github.sha }}
-      #   run: |
-      #     # Update deployment with new image
-      #     kubectl set image deployment/backend-auth \
-      #       backend-auth=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-      #       --namespace=default
-  
-      #     # Wait for rollout to complete
-      #     kubectl rollout status deployment/backend-auth --namespace=default --timeout=5m
-  
-      #     # Verify deployment
-      #     kubectl get pods --namespace=default -l app=backend-auth
-  
-      # - name: Verify deployment
-      #   run: |
-      #     kubectl get services backend-auth-service --namespace=default
-      #     kubectl get ingress backend-auth-ingress --namespace=default
-  
-      # - name: Run database migrations (Optional)
-      #   run: |
-      #     # Get first pod name
-      #     POD_NAME=$(kubectl get pods --namespace=default -l app=backend-auth -o jsonpath="{.items[0].metadata.name}")
-  
-      #     # Run migrations
-      #     kubectl exec $POD_NAME --namespace=default -- python manage.py migrate --noinput
-  
-      #     # Collect static files
-      #     kubectl exec $POD_NAME --namespace=default -- python manage.py collectstatic --noinput
-  
-      # - name: Notify deployment status
-      #   if: always()
-      #   run: |
-      #     if [ "${{ job.status }}" == "success" ]; then
-      #       echo "✅ Deployment successful!"
-      #     else
-      #       echo "❌ Deployment failed!"
-      #     fi
-  
-       
+      - name: Update deployment file with new image
+        run: |
+          # Update the image in deployment.yaml
+          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
+          # Show the change
+          echo "Updated deployment.yaml with new image:"
+          grep "image:" deployment/deployment.yaml
+      - name: Commit and push updated deployment file
+        if: github.event_name != 'pull_request'
+        run: |
+          git config --global user.name "chriscrsov"
+          git config --global user.email "chriscrsov@gmail.com"
+          git add deployment/deployment.yaml
+          git commit -m "Update deployment image to $IMAGE_TAG [skip ci]" || echo "No changes to commit"
+          git push
+
+
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    needs: aws_login_build_push
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Pull latest changes including updated deployment file
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup prerequisites (auto-installs everything)
+        run: |
+          cd automation_script
+          sudo ./check_prerequisites.py
+
+      - name: Setting up IRSA
+        run: |
+          cd automation_script
+          ./setup_irsa.py
+
+      - name: Create/Update Kubernetes Secret
+        run: |
+          # Create or update the backend-secrets secret with SECRET_KEY from GitHub Actions
+          kubectl create secret generic backend-secrets \
+            --from-literal=SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            --namespace=${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to EKS
+        run: |
+          cd automation_script
+          ./deploy_backend.py
+
+

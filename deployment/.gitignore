@@ -1,0 +1,7 @@
+# Ignore secret files with actual values
+secret.yaml
+secret-with-aws-keys.yaml
+
+# Keep template/example files
+!secret.yaml.template
+!secret-with-aws-keys.yaml.template

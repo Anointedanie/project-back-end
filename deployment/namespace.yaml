@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ecommerce-backend-ns
+  labels:
+    name: ecommerce-backend-ns
+    environment: production
