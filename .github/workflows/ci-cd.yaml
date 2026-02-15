@@ -59,6 +59,9 @@ jobs:
           echo "image=$REGISTRY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Update deployment file with new image
+        if: github.event_name != 'pull_request'
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           # Update the image in deployment.yaml
           sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml

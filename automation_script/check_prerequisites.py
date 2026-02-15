@@ -305,9 +305,29 @@ class PrerequisiteChecker:
         returncode, stdout, stderr = run_command("kubectl cluster-info", check=False)
 
         if returncode != 0:
-            print_error("Cannot connect to Kubernetes cluster")
-            print_info(f"Configure with: aws eks update-kubeconfig --name {self.config['cluster_name']} --region {self.config['region']}")
-            return False
+            print_warning("Cannot connect to Kubernetes cluster")
+            print_info("Attempting to configure kubeconfig...")
+
+            # Try to configure kubeconfig automatically
+            config_cmd = f"aws eks update-kubeconfig --name {self.config['cluster_name']} --region {self.config['region']}"
+            returncode, stdout, stderr = run_command(config_cmd, check=False)
+
+            if returncode != 0:
+                print_error("Failed to configure kubeconfig")
+                print_error(f"  {stderr.strip()}")
+                print_info(f"Configure manually: {config_cmd}")
+                return False
+
+            print_success("Kubeconfig configured successfully")
+
+            # Verify connection now works
+            returncode, stdout, stderr = run_command("kubectl cluster-info", check=False)
+            if returncode != 0:
+                print_error("Still cannot connect to cluster after configuring kubeconfig")
+                return False
+
+            print_success("Connected to Kubernetes cluster")
+            return True
 
         print_success("Connected to Kubernetes cluster")
         return True
