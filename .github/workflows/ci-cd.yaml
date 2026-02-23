@@ -82,14 +82,14 @@ jobs:
         with:
           repository: NineTalents-Agency/backend_deployment
           token: ${{ secrets.CHECKOUT_TOKEN }}  
-          # path: deployment
+          path: deployment
           
 
       - name: Update ArgoCD deployment.yml
         env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment/deployment.yaml
+          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
       - name: Commit and push changes to ArgoCD repo
         run: |
           git config --global user.name "chriscrsov"
