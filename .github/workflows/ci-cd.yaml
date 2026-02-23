@@ -58,19 +58,41 @@ jobs:
 
           echo "image=$REGISTRY/$IMAGE_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Update deployment file with new image
-        if: github.event_name != 'pull_request'
+      # - name: Update deployment file with new image
+      #   if: github.event_name != 'pull_request'
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #   run: |
+      #     # Update the image in deployment.yaml
+      #     sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
+      #     # Show the change
+      #     echo "Updated deployment.yaml with new image:"
+      #     grep "image:" deployment/deployment.yaml
+      # - name: Commit and push updated deployment file
+      #   if: github.event_name != 'pull_request'
+      #   run: |
+      #     git config --global user.name "chriscrsov"
+      #     git config --global user.email "chriscrsov@gmail.com"
+      #     git add deployment/deployment.yaml
+      #     git commit -m "Update deployment image to $IMAGE_TAG [skip ci]" || echo "No changes to commit"
+      #     git push
+
+      - name: Clone ArgoCD repository
+        uses: actions/checkout@v3
+        with:
+          repository: NineTalents-Agency/backend_deployment
+          token: ${{ secrets.CHECKOUT_TOKEN }}  
+          path: deployment
+          
+
+      - name: Update ArgoCD deployment.yml
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          # Update the image in deployment.yaml
           sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
-          # Show the change
-          echo "Updated deployment.yaml with new image:"
-          grep "image:" deployment/deployment.yaml
-      - name: Commit and push updated deployment file
-        if: github.event_name != 'pull_request'
+      - name: Commit and push changes to ArgoCD repo
         run: |
+          cd deployment
           git config --global user.name "chriscrsov"
           git config --global user.email "chriscrsov@gmail.com"
           git add deployment/deployment.yaml
