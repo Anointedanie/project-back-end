@@ -89,7 +89,7 @@ jobs:
         env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
+          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment/deployment.yaml
       - name: Commit and push changes to ArgoCD repo
         run: |
           git config --global user.name "chriscrsov"
