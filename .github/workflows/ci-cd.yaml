@@ -82,7 +82,7 @@ jobs:
         with:
           repository: NineTalents-Agency/backend_deployment
           token: ${{ secrets.CHECKOUT_TOKEN }}  
-          path: deployment
+          # path: deployment
           
 
       - name: Update ArgoCD deployment.yml
@@ -97,63 +97,3 @@ jobs:
           git add deployment/deployment.yaml
           git commit -m "Update deployment image to $IMAGE_TAG [skip ci]" || echo "No changes to commit"
           git push
-
-
-  deploy:
-    name: Deploy to EKS
-    runs-on: ubuntu-latest
-    needs: aws_login_build_push
-    if: github.event_name != 'pull_request'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main  # Pull latest changes including updated deployment file
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Setup prerequisites (auto-installs everything)
-        run: |
-          # Ensure .kube directory exists with correct permissions
-          mkdir -p ~/.kube
-          chmod 755 ~/.kube
-
-          cd automation_script
-          # Explicitly pass AWS credentials to sudo environment
-          sudo -E \
-            AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
-            AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
-            AWS_DEFAULT_REGION="${AWS_REGION:-us-east-1}" \
-            AWS_REGION="${AWS_REGION:-us-east-1}" \
-            HOME="${HOME}" \
-            ./check_prerequisites.py
-
-          # Fix kubeconfig permissions (created by sudo, needed by non-sudo deploy)
-          sudo chown -R $USER:$USER ~/.kube || true
-          sudo chmod 600 ~/.kube/config || true
-
-      - name: Setting up IRSA
-        run: |
-          cd automation_script
-          ./setup_irsa.py
-
-      - name: Create/Update Kubernetes Secret
-        run: |
-          # Create or update the backend-secrets secret with SECRET_KEY from GitHub Actions
-          kubectl create secret generic backend-secrets \
-            --from-literal=SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-            --namespace=${{ env.NAMESPACE }} \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Deploy to EKS
-        run: |
-          cd automation_script
-          ./deploy_backend.py
-
-
