@@ -89,11 +89,11 @@ jobs:
         env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment.yaml
+          sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment/deployment.yaml
       - name: Commit and push changes to ArgoCD repo
         run: |
           git config --global user.name "chriscrsov"
           git config --global user.email "chriscrsov@gmail.com"
-          git add deployment/deployment.yaml
+          git add deployment/deployment/deployment.yaml
           git commit -m "Update deployment image to $IMAGE_TAG [skip ci]" || echo "No changes to commit"
           git push
