@@ -88,7 +88,7 @@ jobs:
       - name: Update ArgoCD deployment.yml
         env:
             # REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REGISTRY: 93796654438.dkr.ecr.us-east-1.amazonaws.com/
+            REGISTRY: 93796654438.dkr.ecr.us-east-1.amazonaws.com
         run: |
           sed -i "s|image: .*|image: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG|g" deployment/deployment/deployment.yaml
       - name: Commit and push changes to ArgoCD repo
