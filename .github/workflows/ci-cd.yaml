@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   IMAGE_TAG: dev-${{ github.run_number }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  # EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   DEPLOYMENT_NAME: ecommerce-backend
   NAMESPACE: ecommerce-backend-ns
