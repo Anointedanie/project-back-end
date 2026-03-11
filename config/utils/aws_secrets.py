@@ -93,11 +93,15 @@ def get_rds_credentials():
         # Map them to Django database settings
         db_config = {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': secret.get('dbname', secret.get('database', 'postgres')),
-            'USER': secret.get('username', secret.get('user')),
+            # 'NAME': secret.get('dbname', secret.get('database', 'postgres')),
+            'NAME': env_config('DB_NAME', default='postgres'),
+            # 'USER': secret.get('username', secret.get('user')),
+            'USER': secret.get('username', env_config('DB_USER', default='chris')),
             'PASSWORD': secret.get('password'),
-            'HOST': secret.get('host'),
-            'PORT': int(secret.get('port', 5432)),
+            # 'HOST': secret.get('host'),
+            'HOST': env_config('DB_HOST'),
+            # 'PORT': int(secret.get('port', 5432)),
+            'PORT': int(env_config('DB_PORT', default='5432')),
             'OPTIONS': {
                 'connect_timeout': 10,
             }
